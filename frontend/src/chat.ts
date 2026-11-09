@@ -19,6 +19,13 @@ export type ChatSettings = {
 
 export const storageKey = 'ai-chat-playground-state';
 
+export class StreamInterruptedError extends Error {
+  constructor() {
+    super('The streaming response ended before a complete event was received.');
+    this.name = 'StreamInterruptedError';
+  }
+}
+
 export function createMessage(role: ChatMessage['role'], content: string): ChatMessage {
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
@@ -42,6 +49,16 @@ export function loadConversation(): { messages: ChatMessage[]; settings: ChatSet
   } catch {
     return null;
   }
+}
+
+function consumeEvent(event: string, onToken: (token: string) => void): void {
+  const eventType = event.split('\n').find((line) => line.startsWith('event: '))?.replace('event: ', '');
+  const dataLine = event.split('\n').find((line) => line.startsWith('data: '));
+  if (!dataLine) return;
+
+  const data = JSON.parse(dataLine.replace('data: ', '')) as { content?: string; message?: string };
+  if (eventType === 'token' && data.content) onToken(data.content);
+  if (eventType === 'error') throw new Error(data.message ?? 'Backend error');
 }
 
 export async function streamChat(
@@ -76,13 +93,9 @@ export async function streamChat(
     const events = buffer.split('\n\n');
     buffer = events.pop() ?? '';
 
-    for (const event of events) {
-      const eventType = event.split('\n').find((line) => line.startsWith('event: '))?.replace('event: ', '');
-      const dataLine = event.split('\n').find((line) => line.startsWith('data: '));
-      if (!dataLine) continue;
-      const data = JSON.parse(dataLine.replace('data: ', '')) as { content?: string; message?: string };
-      if (eventType === 'token' && data.content) onToken(data.content);
-      if (eventType === 'error') throw new Error(data.message ?? 'Backend error');
-    }
+    for (const event of events) consumeEvent(event, onToken);
   }
+
+  buffer += decoder.decode();
+  if (buffer.trim()) throw new StreamInterruptedError();
 }
