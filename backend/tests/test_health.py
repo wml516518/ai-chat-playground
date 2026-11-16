@@ -9,4 +9,4 @@ def test_health_returns_default_model():
     response = client.get("/api/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "model": "deepseek-V4-flash"}
+    assert response.json() == {"status": "ok", "model": "deepseek-flash"}

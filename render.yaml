@@ -9,7 +9,7 @@ services:
       - key: OPENAI_BASE_URL
         value: https://api.deepseek.com
       - key: OPENAI_MODEL
-        value: deepseek-V4-flash
+        value: deepseek-flash
       - key: OPENAI_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS

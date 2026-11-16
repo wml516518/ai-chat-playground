@@ -15,7 +15,7 @@ function sseResponse(chunks: string[]): Response {
 }
 
 function healthResponse(): Response {
-  return new Response(JSON.stringify({ status: 'ok', model: 'deepseek-V4-flash' }));
+  return new Response(JSON.stringify({ status: 'ok', model: 'deepseek-flash' }));
 }
 
 describe('App', () => {
@@ -40,7 +40,7 @@ describe('App', () => {
     expect(screen.getByText('欢迎使用 AI 对话实验室。请选择 Prompt 预设、调整参数，然后发送一条消息开始测试。')).toBeInTheDocument();
     expect(screen.getByLabelText('助手')).toBeInTheDocument();
     expect(screen.getByText('正在检查')).toBeInTheDocument();
-    expect(await screen.findByText('在线 · deepseek-V4-flash')).toBeInTheDocument();
+    expect(await screen.findByText('在线 · deepseek-flash')).toBeInTheDocument();
     expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(/\/api\/health$/);
   });
 
@@ -78,7 +78,7 @@ describe('App', () => {
 
   it('clears the conversation with Chinese copy and persists the result', async () => {
     render(<App />);
-    await screen.findByText('在线 · deepseek-V4-flash');
+    await screen.findByText('在线 · deepseek-flash');
     await userEvent.click(screen.getByRole('button', { name: '清空对话' }));
     expect(screen.getByText('对话已清空，可以开始新的测试。')).toBeInTheDocument();
     await waitFor(() => {
@@ -143,6 +143,6 @@ describe('App', () => {
     expect(screen.getByLabelText('Prompt 预设')).toHaveValue('code-reviewer');
     expect(screen.getByLabelText('温度')).toHaveValue('0.4');
     expect(screen.getByLabelText('最大生成长度')).toHaveValue(512);
-    await screen.findByText('在线 · deepseek-V4-flash');
+    await screen.findByText('在线 · deepseek-flash');
   });
 });

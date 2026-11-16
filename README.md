@@ -10,7 +10,7 @@
 - 可调节温度（0–2，默认 0.7）与最大生成词元数（64–4096，默认 800）。
 - 当前浏览器通过 `localStorage` 保存对话与参数，刷新后恢复；清空对话保留参数，恢复默认参数保留对话。
 - 桌面双栏与手机单栏布局，支持键盘焦点和系统减少动态效果偏好。
-- FastAPI 代理兼容 OpenAI 的模型接口；前端部署到 Netlify，后端部署到 Render。
+- FastAPI 代理兼容 OpenAI 的模型接口；当前线上版本集成在个人主页的 `/playground/`，通过同域 `/api/ai-chat/*` 访问独立后端。
 
 ## 环境配置
 
@@ -20,10 +20,10 @@
 
 ```env
 OPENAI_BASE_URL=https://api.deepseek.com
-OPENAI_MODEL=deepseek-V4-flash
+OPENAI_MODEL=deepseek-flash
 ```
 
-本地密钥放在未纳入版本控制的 `backend/.env` 中。部署时密钥只配置在 Render，不能放入 Netlify、`VITE_*` 变量、前端代码或 Git 仓库。
+本地密钥放在未纳入版本控制的 `backend/.env` 中。部署时密钥只配置在服务端环境文件或平台环境变量，不能放入静态前端、`VITE_*` 变量、前端代码或 Git 仓库。
 
 ## 本地开发
 
@@ -79,6 +79,10 @@ cd backend
 - 角色标识 `system`、`user`、`assistant` 和预设标识保持原有接口格式。
 
 ## 部署
+
+### 当前自托管部署
+
+线上前端位于 `https://wml.ailoong.net.cn/playground/`，请求同域 `/api/ai-chat/api/*`；Nginx 将该前缀转发到 `127.0.0.1:8001/api/*`。后端由 systemd 以独立低权限用户运行，`OPENAI_MODEL=deepseek-flash`。
 
 ### Render 后端
 

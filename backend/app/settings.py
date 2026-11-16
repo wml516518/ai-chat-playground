@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str = "https://api.deepseek.com"
-    openai_model: str = "deepseek-V4-flash"
+    openai_model: str = "deepseek-flash"
     allowed_origins: str = (
         "http://localhost:5173,http://127.0.0.1:5173,"
         "http://localhost:5174,http://127.0.0.1:5174"
