@@ -26,6 +26,14 @@ textarea {
   font: inherit;
 }
 
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #7d241b;
+  outline-offset: 3px;
+}
+
 .app-shell {
   width: min(1240px, calc(100% - 32px));
   margin: 0 auto;
@@ -69,18 +77,24 @@ h1 {
   border: 1px solid #c7c0b4;
   background: #fff;
   padding: 9px 12px;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.health-pill svg {
+  flex-shrink: 0;
 }
 
 .workspace {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
   gap: 24px;
   padding-top: 24px;
 }
 
 .control-panel,
 .chat-panel {
+  min-width: 0;
   border-top: 1px solid #161616;
   padding-top: 18px;
 }
@@ -113,6 +127,8 @@ label {
 select,
 input,
 textarea {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #c7c0b4;
   background: #fff;
   color: #161616;
@@ -161,6 +177,8 @@ textarea {
 }
 
 .message p {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: #2f2a24;
   line-height: 1.6;
   margin-bottom: 0;
@@ -175,6 +193,7 @@ textarea {
 }
 
 .error-banner {
+  overflow-wrap: anywhere;
   border: 1px solid #a83f32;
   color: #7d241b;
   margin-top: 14px;
@@ -197,7 +216,7 @@ textarea {
   .topbar,
   .workspace,
   .composer {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .topbar {
@@ -207,5 +226,14 @@ textarea {
 
   .messages {
     min-height: 360px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

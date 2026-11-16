@@ -10,6 +10,7 @@ import {
   type ChatSettings
 } from './chat';
 import { presets } from './presets';
+import { toPublicChatError, uiCopy } from './copy';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -22,12 +23,12 @@ const defaultSettings: ChatSettings = {
 function App() {
   const loaded = useMemo(() => loadConversation(), []);
   const [messages, setMessages] = useState<ChatMessage[]>(loaded?.messages ?? [
-    createMessage('assistant', 'Welcome. Choose a preset, adjust the controls, and send a message.')
+    createMessage('assistant', uiCopy.welcome)
   ]);
   const [settings, setSettings] = useState<ChatSettings>(loaded?.settings ?? defaultSettings);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [health, setHealth] = useState('checking');
+  const [health, setHealth] = useState<string>(uiCopy.health.checking);
   const [error, setError] = useState('');
 
   const selectedPreset = presets.find((preset) => preset.id === settings.preset) ?? presets[0];
@@ -39,8 +40,8 @@ function App() {
   useEffect(() => {
     fetch(`${apiBaseUrl.replace(/\/$/, '')}/api/health`)
       .then((response) => response.json())
-      .then((data: { model: string }) => setHealth(`online: ${data.model}`))
-      .catch(() => setHealth('offline'));
+      .then((data: { model: string }) => setHealth(`${uiCopy.health.online} · ${data.model}`))
+      .catch(() => setHealth(uiCopy.health.offline));
   }, []);
 
   async function handleSubmit(event: FormEvent) {
@@ -86,11 +87,11 @@ function App() {
         }
       );
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : 'Chat request failed.';
+      const message = toPublicChatError(caught);
       setError(message);
       setMessages((current) =>
         current.map((item) =>
-          item.id === assistantMessage.id ? { ...item, content: `Error: ${message}` } : item
+          item.id === assistantMessage.id ? { ...item, content: message } : item
         )
       );
     } finally {
@@ -99,7 +100,7 @@ function App() {
   }
 
   function clearConversation() {
-    const welcome = createMessage('assistant', 'Conversation cleared. Ready for a new prompt.');
+    const welcome = createMessage('assistant', uiCopy.cleared);
     setMessages([welcome]);
     setError('');
   }
@@ -108,8 +109,8 @@ function App() {
     <main className="app-shell">
       <section className="topbar">
         <div>
-          <p className="eyebrow">Full-stack AI project</p>
-          <h1>AI Chat Playground</h1>
+          <p className="eyebrow">{uiCopy.projectEyebrow}</p>
+          <h1>{uiCopy.title}</h1>
         </div>
         <div className="health-pill">
           <Activity size={16} />
@@ -118,14 +119,14 @@ function App() {
       </section>
 
       <section className="workspace">
-        <aside className="control-panel" aria-label="Chat controls">
+        <aside className="control-panel" aria-label={uiCopy.controls}>
           <div className="panel-heading">
             <SlidersHorizontal size={18} />
-            <h2>Controls</h2>
+            <h2>{uiCopy.controls}</h2>
           </div>
 
           <label>
-            Preset
+            {uiCopy.preset}
             <select
               value={settings.preset}
               onChange={(event) => setSettings({ ...settings, preset: event.target.value })}
@@ -139,8 +140,9 @@ function App() {
           </label>
 
           <label>
-            Temperature
+            {uiCopy.temperature}
             <input
+              aria-label={uiCopy.temperature}
               type="range"
               min="0"
               max="2"
@@ -154,7 +156,7 @@ function App() {
           </label>
 
           <label>
-            Max tokens
+            {uiCopy.maxTokens}
             <input
               type="number"
               min="64"
@@ -168,23 +170,23 @@ function App() {
 
           <button className="icon-button" type="button" onClick={clearConversation}>
             <Trash2 size={16} />
-            Clear conversation
+            {uiCopy.clear}
           </button>
 
           <button className="icon-button secondary" type="button" onClick={() => setSettings(defaultSettings)}>
             <RotateCcw size={16} />
-            Reset controls
+            {uiCopy.reset}
           </button>
         </aside>
 
         <section className="chat-panel">
-          <div className="messages" aria-label="Conversation">
+          <div className="messages" aria-label={uiCopy.conversation} aria-live="polite" aria-busy={isStreaming}>
             {messages.map((message) => (
               <article className={`message ${message.role}`} key={message.id}>
-                <div className="avatar">
-                  {message.role === 'assistant' ? <Bot size={16} /> : 'You'}
+                <div className="avatar" aria-label={message.role === 'assistant' ? uiCopy.assistant : uiCopy.user}>
+                  {message.role === 'assistant' ? <Bot size={16} /> : uiCopy.user}
                 </div>
-                <p>{message.content || (isStreaming ? 'Thinking...' : '')}</p>
+                <p>{message.content || (isStreaming ? uiCopy.thinking : '')}</p>
               </article>
             ))}
           </div>
@@ -193,14 +195,14 @@ function App() {
 
           <form className="composer" onSubmit={handleSubmit}>
             <textarea
-              aria-label="Message"
-              placeholder="Ask about code, resumes, product ideas, or anything you want to test..."
+              aria-label={uiCopy.message}
+              placeholder={uiCopy.placeholder}
               value={input}
               onChange={(event) => setInput(event.target.value)}
             />
             <button type="submit" disabled={isStreaming || !input.trim()}>
               <Send size={18} />
-              Send
+              {isStreaming ? uiCopy.sending : uiCopy.send}
             </button>
           </form>
         </section>
